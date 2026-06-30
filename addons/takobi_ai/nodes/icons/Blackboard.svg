@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <!-- Board -->
+  <rect x="1" y="1" width="14" height="13" rx="1.2" fill="#45a4a0"/>
+  <!-- Chalk tray -->
+  <rect x="1" y="12.2" width="14" height="1.8" rx="0.6" fill="#2e7b78"/>
+  <!-- Row 1: key + value pill -->
+  <rect x="2.5" y="3"   width="4"   height="1.6" rx="0.5" fill="white" opacity="0.9"/>
+  <rect x="8"   y="3"   width="5"   height="1.6" rx="0.5" fill="white" opacity="0.5"/>
+  <!-- Row 2: key + value pill -->
+  <rect x="2.5" y="5.5" width="3"   height="1.6" rx="0.5" fill="white" opacity="0.9"/>
+  <rect x="7"   y="5.5" width="6"   height="1.6" rx="0.5" fill="white" opacity="0.5"/>
+  <!-- Row 3: key + value pill -->
+  <rect x="2.5" y="8"   width="5"   height="1.6" rx="0.5" fill="white" opacity="0.9"/>
+  <rect x="9"   y="8"   width="4"   height="1.6" rx="0.5" fill="white" opacity="0.5"/>
+</svg>

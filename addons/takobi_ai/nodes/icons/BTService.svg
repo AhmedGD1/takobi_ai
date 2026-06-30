@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <!-- Gear body -->
+  <circle cx="8" cy="8" r="7" fill="#478cbf"/>
+  <!-- 8 teeth -->
+  <rect x="6.7" y="0.3" width="2.6" height="2.2" rx="0.4" fill="#478cbf"/>
+  <g transform="rotate(45,8,8)"><rect x="6.7" y="0.3" width="2.6" height="2.2" rx="0.4" fill="#478cbf"/></g>
+  <g transform="rotate(90,8,8)"><rect x="6.7" y="0.3" width="2.6" height="2.2" rx="0.4" fill="#478cbf"/></g>
+  <g transform="rotate(135,8,8)"><rect x="6.7" y="0.3" width="2.6" height="2.2" rx="0.4" fill="#478cbf"/></g>
+  <g transform="rotate(180,8,8)"><rect x="6.7" y="0.3" width="2.6" height="2.2" rx="0.4" fill="#478cbf"/></g>
+  <g transform="rotate(225,8,8)"><rect x="6.7" y="0.3" width="2.6" height="2.2" rx="0.4" fill="#478cbf"/></g>
+  <g transform="rotate(270,8,8)"><rect x="6.7" y="0.3" width="2.6" height="2.2" rx="0.4" fill="#478cbf"/></g>
+  <g transform="rotate(315,8,8)"><rect x="6.7" y="0.3" width="2.6" height="2.2" rx="0.4" fill="#478cbf"/></g>
+  <!-- Center hole -->
+  <circle cx="8" cy="8" r="2.8" fill="white"/>
+  <!-- Clock hands (timed interval metaphor) -->
+  <line x1="8" y1="8" x2="8" y2="5.8" stroke="#478cbf" stroke-width="0.8" stroke-linecap="round"/>
+  <line x1="8" y1="8" x2="10.1" y2="8" stroke="#478cbf" stroke-width="0.8" stroke-linecap="round"/>
+</svg>
