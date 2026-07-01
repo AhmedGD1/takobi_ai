@@ -1,0 +1,22 @@
+* text=auto eol=lf
+
+*.cs   text eol=lf diff=csharp
+*.cfg  text eol=lf
+*.uid  text eol=lf
+*.tscn text eol=lf
+*.tres text eol=lf
+*.md   text eol=lf
+
+*.png  binary
+*.jpg  binary
+*.webp binary
+*.ico  binary
+*.wav  binary
+*.ogg  binary
+
+/**                       export-ignore
+/addons                   -export-ignore
+/addons/**                -export-ignore
+
+docs/**            linguist-documentation
+examples/**        linguist-vendored
