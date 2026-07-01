@@ -17,6 +17,7 @@ public partial class BTDebuggerPlugin : EditorDebuggerPlugin
 
         var session = GetSession(sessionId);
         session.AddSessionTab(panel);
+        session.Stopped += panel.ClearSnapshots;
     }
 
     public override bool _Capture(string message, Array data, int sessionId)

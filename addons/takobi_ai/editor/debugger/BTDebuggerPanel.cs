@@ -466,20 +466,34 @@ public partial class BTDebuggerPanel : VBoxContainer
             ? GetThemeIcon(iconName, "EditorIcons")
             : GetThemeIcon(fallbackIconName, "EditorIcons");
 
-    private static string StatusLabel(BTNodeSnapshot node) =>
-        node.IsRunning ? "Running" : node.Status switch
-        {
-            Status.Success => "Success",
-            Status.Failure => "Failure",
-            _ => node.Status.ToString()
-        };
+    private static string StatusLabel(BTNodeSnapshot node) => node.IsRunning ? "Running" : node.Status switch
+    {
+        Status.Success => "Success",
+        Status.Failure => "Failure",
+        _ => node.Status.ToString()
+    };
 
-    private static Color StatusColor(BTNodeSnapshot node) =>
-        node.IsRunning ? RunningColor : node.Status switch
-        {
-            Status.Success => SuccessColor,
-            Status.Failure => FailureColor,
-            _ => IdleColor
-        };
+    private static Color StatusColor(BTNodeSnapshot node) => node.IsRunning ? RunningColor : node.Status switch
+    {
+        Status.Success => SuccessColor,
+        Status.Failure => FailureColor,
+        _ => IdleColor
+    };
+
+    public void ClearSnapshots()
+    {
+        latestTreeSnapshots.Clear();
+        latestBlackboardSnapshots.Clear();
+        selectedTreeId = -1;
+
+        treeSelector.Clear();
+        nodeTree.Clear();
+
+        ShowBlackboardEmpty("No blackboard data yet.");
+
+        statusBadgesRow.Visible = false;
+        statusBar.Visible = true;
+        statusBar.Text = "Waiting for a tree to start ticking…";
+    }
 }
 #endif
