@@ -12,6 +12,8 @@ public partial class BehaviorTree : Node
 
     [Signal] public delegate void TreeActiveChangedEventHandler(bool active);
 
+    [Export] public Node Agent { get; set; }
+
     [Export] public TickMode Mode
     {
         get => mode;
@@ -109,7 +111,7 @@ public partial class BehaviorTree : Node
 
         root = GetChildren().OfType<BTNode>().FirstOrDefault();
         RegisterMetrics();
-        originContext = new BTContext(Owner, Blackboard);
+        originContext = new BTContext(Agent, Blackboard);
 
 #if DEBUG
         BTDebuggerCollector.RegisterTree(this);
