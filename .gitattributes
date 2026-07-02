@@ -1,10 +1,13 @@
+# Normalize EOL for all files that Git considers text files.
 * text=auto eol=lf
 
-*.cs diff=csharp
+# Ignore some files when exporting to a ZIP.
+# Only include the addons folder when downloading from the Asset Library.
+/**                  export-ignore
+/addons              !export-ignore
+/addons/beehave      !export-ignore
+/addons/beehave/**   !export-ignore
 
-*.png binary
-*.jpg binary
-*.webp binary
-*.ico binary
-*.wav binary
-*.ogg binary
+# Also include script templates.
+/script_templates    !export-ignore
+/script_templates/** !export-ignore
