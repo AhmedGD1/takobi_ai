@@ -1,5 +1,7 @@
 # TakobiAI
 
+<img width="1280" height="720" alt="takobiai_preview_1280x720" src="https://github.com/user-attachments/assets/b0a90a00-2c3e-4c30-a01f-076b651c3633" />
+
 A behavior tree library for **Godot 4 / C#**, built on native Godot editor APIs
 
 <img width="364" height="151" alt="image" src="https://github.com/user-attachments/assets/12f2e2de-aae2-4fa3-b0ff-85b34b856de9" />
@@ -25,10 +27,12 @@ A behavior tree library for **Godot 4 / C#**, built on native Godot editor APIs
 - **SubTree composition** — nest and reuse whole trees as a single leaf, with optional Blackboard sharing and circular-reference protection.
 - **Zero-allocation tick path** — argument resolution is cached ahead of time, so ticking a tree doesn't generate garbage every frame.
 
-## Installation
+# Installation
 
-1. Copy the `addons/takobi_ai` folder into your project's `addons/` directory.
-2. Enable **TakobiAI** in **Project Settings → Plugins**.
+1. [Download Latest Release](https://github.com/AhmedGD1/takobi_ai/releases/tag/v1.0.0)
+2. Unpack the `addons/takobi_ai` folder into your `/addons` folder within the Godot project
+3. Enable this addon within the Godot settings: `Project > Project Settings > Plugins`
+4. Move `script_templates` into your project folder.
 
 ## License
 
