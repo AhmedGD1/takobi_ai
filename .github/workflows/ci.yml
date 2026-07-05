@@ -5,14 +5,36 @@ on:
   pull_request:
 
 jobs:
-  validate:
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check plugin exists
-        run: test -f addons/takobi_ai/plugin.cfg
+      # -----------------------------
+      # Setup .NET
+      # -----------------------------
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
 
-      - name: Check runtime folder exists
-        run: test -d addons/takobi_ai
+      # -----------------------------
+      # Restore
+      # -----------------------------
+      - name: Restore
+        run: dotnet restore TakobiAI.csproj
+
+      # -----------------------------
+      # Build
+      # -----------------------------
+      - name: Build
+        run: dotnet build TakobiAI.csproj --configuration Release --no-restore
+
+      # -----------------------------
+      # Validate plugin structure
+      # -----------------------------
+      - name: Validate plugin structure
+        run: |
+          test -f addons/takobi_ai/plugin.cfg
+          test -d addons/takobi_ai

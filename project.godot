@@ -1,0 +1,43 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="TakobiAI"
+run/main_scene="uid://755jwykenx4l"
+config/features=PackedStringArray("4.7", "C#", "GL Compatibility")
+config/icon="res://icon.svg"
+
+[autoload]
+
+BTGlobalMetrics="*uid://buiw3d8sk3lrk"
+
+[display]
+
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[dotnet]
+
+project/assembly_name="TakobiAI"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/takobi_ai/plugin.cfg")
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
