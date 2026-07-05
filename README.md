@@ -53,7 +53,7 @@ public override void _PhysicsProcess(double delta) => hsm.Tick(delta);
 
 # Installation
 
-1. [Download Latest Release](https://github.com/AhmedGD1/takobi_ai/releases/tag/v1.0.0)
+1. [Download Latest Release](https://github.com/AhmedGD1/takobi_ai/releases/tag/v1.1.0)
 2. Unpack the `addons/takobi_ai` folder into your `/addons` folder within the Godot project
 3. Enable this addon within the Godot settings: `Project > Project Settings > Plugins`
 4. Move `script_templates` into your project folder.
