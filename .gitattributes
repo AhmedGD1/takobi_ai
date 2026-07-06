@@ -8,3 +8,6 @@
 # Also include script templates.
 /script_templates    !export-ignore
 /script_templates/** !export-ignore
+
+/examples    !export-ignore
+/examples/** !export-ignore
