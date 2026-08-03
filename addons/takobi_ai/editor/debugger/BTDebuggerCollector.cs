@@ -9,7 +9,7 @@ namespace TakobiAI.Editor;
 public static class BTDebuggerCollector
 {
     private const string MessagePrefix = "bt_debugger";
-    private const double SnapshotInterval = 0.1; // 10 Hz
+    private const double SnapshotInterval = 0.1;
 
     private static readonly HashSet<BehaviorTree> trees = [];
     private static double elapsed;
@@ -79,13 +79,14 @@ public static class BTDebuggerCollector
             tree.Blackboard?.GetInstanceId() ?? 0
         ];
     }
+
     private static void CollectNode(BTNode node, long parentId, Array nodeData)
     {
         nodeData.Add(new Array
         {
             node.GetInstanceId(),
             parentId,
-            node.GetType().Name,
+            node.Name,
             (int)node.LastStatus,
             node.IsRunning,
             node.TickCount
@@ -106,3 +107,4 @@ public static class BTDebuggerCollector
     }
 }
 #endif
+

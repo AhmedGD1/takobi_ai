@@ -5,7 +5,8 @@ namespace TakobiAI;
 [Tool, GlobalClass, Icon("uid://ccqhaoqo7ffg5")]
 public abstract partial class BTService : Resource
 {
-    [Export] public float Interval { get; set; } = 0.2f;
+    [Export(PropertyHint.Range, "0.05,10,suffix:s")] 
+    public float Interval { get; private set; } = 0.2f;
     
     private double timer;
 

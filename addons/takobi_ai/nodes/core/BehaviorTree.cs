@@ -12,7 +12,7 @@ public partial class BehaviorTree : Node
 
     [Signal] public delegate void TreeActiveChangedEventHandler(bool active);
 
-    [Export] public Node Agent { get; set; }
+    [Export] public Node Agent { get; private set; }
 
     [Export] public TickMode Mode
     {
@@ -36,9 +36,10 @@ public partial class BehaviorTree : Node
             active = value;
             SetPhysicsProcess(value && mode == TickMode.Physics);
             SetProcess(value && mode == TickMode.Idle);
-
+#if DEBUG
             if (!Engine.IsEditorHint() && IsNodeReady())
                 BTGlobalMetrics.Instance?.TreeActiveChanged(value);
+#endif
             EmitSignalTreeActiveChanged(value);
         }
     }
@@ -191,10 +192,12 @@ public partial class BehaviorTree : Node
 
     private void UnregisterMetrics()
     {
+#if DEBUG
         BTGlobalMetrics.Instance?.TreeUnregistered(active);
 
         if (processTimeMetricName is not null)
             Performance.RemoveCustomMonitor(processTimeMetricName);
+#endif
     }
 
     private double GetProcessTimeMetricValue() => processTimeMetricValue;
@@ -210,7 +213,7 @@ public partial class BehaviorTree : Node
 
     public void Abort(BTContext ctx) => root?.Abort(ctx);
 
-    public void SetSubTree(bool value, BTContext ctx, SubTree owner = null)
+    internal void SetSubTree(bool value, BTContext ctx, SubTree owner = null)
     {
         IsSubTree = value;
         SubTreeOwner = owner;
