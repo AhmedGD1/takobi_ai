@@ -3,10 +3,10 @@ using System;
 
 namespace TakobiAI.HSM;
 
-public sealed class TakobiState<T> where T : Enum
+public sealed class TakobiState<T>(T id) where T : Enum
 {
     /// <summary>The unique identifier for this state, based on the enum value.</summary>
-    public T Id { get; private set; }
+    public T Id { get; private set; } = id;
 
     /// <summary>The state to transition to when this state's <see cref="Timeout"/> elapses.</summary>
     public T TimeoutTargetState { get; private set; }
@@ -42,20 +42,14 @@ public sealed class TakobiState<T> where T : Enum
     public double Cooldown { get; private set; }
 
     /// <summary>The total machine time at which this state was last entered. Used for cooldown evaluation.</summary>
-    public double LastFiredTime { get; internal set; }
+    public double LastFiredTime { get; internal set; } = double.NegativeInfinity;
 
     /// <summary>
     /// The list of transitions originating from this state, sorted by priority then insertion order.
     /// Managed internally — use <see cref="TakobiHSM{T}.AddTransition"/> to add transitions.
     /// </summary>
-    public List<TakobiTransition<T>> Transitions { get; private set; }
+    public List<TakobiTransition<T>> Transitions { get; private set; } = [];
 
-    public TakobiState(T id)
-    {
-        Id = id;
-        Transitions = new();
-        LastFiredTime = double.NegativeInfinity;
-    }
 
     /// <summary>
     /// Registers a callback to be invoked every tick while this state is active.
@@ -213,4 +207,3 @@ public sealed class TakobiState<T> where T : Enum
         return Math.Max(0.0, duration);
     }
 }
-

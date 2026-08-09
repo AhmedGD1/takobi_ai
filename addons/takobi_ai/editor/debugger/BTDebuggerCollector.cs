@@ -103,8 +103,7 @@ public static class BTDebuggerCollector
         foreach (var kvp in bb.Data)
             entries.Add(new Array { kvp.Key.ToString(), kvp.Value.ToString() });
 
-        return new Array { bb.GetInstanceId(), entries };
+        return [bb.GetInstanceId(), entries];
     }
 }
 #endif
-

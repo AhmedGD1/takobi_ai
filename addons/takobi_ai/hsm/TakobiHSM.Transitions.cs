@@ -8,7 +8,7 @@ public partial class TakobiHSM<T>
 {
     public const int TRANSITION_CACHE_INITIAL_CAPACITY = 32;
 
-    private readonly List<TakobiTransition<T>> globalTransitions = new();
+    private readonly List<TakobiTransition<T>> globalTransitions = [];
     private TakobiTransition<T>[] transitionCache = new TakobiTransition<T>[TRANSITION_CACHE_INITIAL_CAPACITY];
 
     private int transitionCounter;
@@ -163,4 +163,3 @@ public partial class TakobiHSM<T>
 
     #endregion
 }
-

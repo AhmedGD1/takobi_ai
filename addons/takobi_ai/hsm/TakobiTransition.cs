@@ -4,13 +4,13 @@ using FSMEventName = Godot.StringName;
 
 namespace TakobiAI.HSM;
 
-public sealed class TakobiTransition<T> where T : Enum
+public sealed class TakobiTransition<T>(T from, T to, bool isGlobal = false) where T : Enum
 {
     /// <summary>The state this transition originates from.</summary>
-    public T From { get; private set; }
+    public T From { get; private set; } = from;
 
     /// <summary>The state this transition leads to.</summary>
-    public T To { get; private set; }
+    public T To { get; private set; } = to;
 
     /// <summary>Optional callback invoked when this transition fires. Set via <see cref="Do"/>.</summary>
     public Action Callback { get; private set; }
@@ -51,18 +51,11 @@ public sealed class TakobiTransition<T> where T : Enum
     /// <see cref="TakobiHSM{T}.AddGlobalTransition"/> and is evaluated 
     /// regardless of the current active state.
     /// </summary>
-    public bool IsGlobal { get; private set; }
+    public bool IsGlobal { get; private set; } = isGlobal;
 
     // only used with global transitions
-    private readonly HashSet<T> excludedStates = new();
-    private readonly HashSet<T> availableStates = new();
-
-    public TakobiTransition(T from, T to, bool isGlobal = false)
-    {
-        To = to;
-        From = from;
-        IsGlobal = isGlobal;
-    }
+    private readonly HashSet<T> excludedStates = [];
+    private readonly HashSet<T> availableStates = [];
 
     /// <summary>
     /// Sets the condition evaluated each tick to determine whether this transition should fire.<br/>
@@ -221,4 +214,3 @@ public sealed class TakobiTransition<T> where T : Enum
         availableStates.Count == 0 ||
         availableStates.Contains(current);
 }
-
