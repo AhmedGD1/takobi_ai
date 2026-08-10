@@ -1,7 +1,5 @@
 # TakobiAI
 
-![takobiai_preview_1280x720](takobiai_preview_1280x720.png)
-
 A behavior tree library for **Godot 4 / C#**, built on native Godot editor APIs
 
 <img width="408" height="270" alt="image" src="https://github.com/user-attachments/assets/1346a2a2-3e93-42bd-8045-c0567aba70ea" />
