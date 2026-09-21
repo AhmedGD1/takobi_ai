@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Godot;
 using TakobiAI.Decorators;
@@ -7,37 +8,57 @@ namespace TakobiAI.Composites;
 [Tool, GlobalClass, Icon("uid://cvlicgbm21ebg")]
 public partial class WeightedSelector : BTComposite
 {
+    private RandomNumberGenerator rng = new();
+
     private int runningIndex = -1;
 
     protected override void OnEnter(BTContext ctx) => runningIndex = -1;
 
     protected override Status OnTick(BTContext ctx)
     {
-        int bestIndex = -1;
-        float bestScore = float.MinValue;
+        if (runningIndex != -1)
+        {
+            Status s = Children[runningIndex].Tick(ctx);
+            if (s != Status.Running)
+                runningIndex = -1;
+            return s;
+        }
+
+        int index = PickWeightedIndex(ctx);
+        if (index == -1)
+            return Status.Failure;
+
+        Status status = Children[index].Tick(ctx);
+        runningIndex = status == Status.Running ? index : -1;
+        return status;
+    }
+
+    private int PickWeightedIndex(BTContext ctx)
+    {
+        float total = 0f;
+        Span<float> weights = stackalloc float[Children.Length];
 
         for (int i = 0; i < Children.Length; i++)
         {
-            float score = Children[i].GetWeight(ctx);
-
-            if (score > bestScore)
-            {
-                bestScore = score;
-                bestIndex = i;
-            }
+            float w = Mathf.Max(0f, Children[i].GetWeight(ctx));
+            weights[i] = w;
+            total += w;
         }
 
-        if (bestIndex == -1)
-            return Status.Failure;
+        if (total <= 0f)
+            return -1;
 
-        if (runningIndex != -1 && runningIndex != bestIndex)
-            Children[runningIndex].Abort(ctx);
+        float roll = rng.Randf() * total;
+        float acc = 0f;
 
-        Status status = Children[bestIndex].Tick(ctx);
+        for (int i = 0; i < weights.Length; i++)
+        {
+            acc += weights[i];
+            if (roll < acc)
+                return i;
+        }
 
-        runningIndex = status == Status.Running ? bestIndex : -1;
-
-        return status;
+        return weights.Length - 1;
     }
 
     public override string[] _GetConfigurationWarnings()
@@ -51,4 +72,3 @@ public partial class WeightedSelector : BTComposite
         return base._GetConfigurationWarnings();
     }
 }
-
