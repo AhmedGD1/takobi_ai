@@ -17,7 +17,7 @@ public partial class RandomSelector : BTRandomComposite
     {
         while (currentIndex < ShuffledChildren.Length)
         {
-            var status = ShuffledChildren[currentIndex].Tick(ctx);
+            Status status = ShuffledChildren[currentIndex].Tick(ctx);
 
             switch (status)
             {
@@ -30,5 +30,3 @@ public partial class RandomSelector : BTRandomComposite
         return Status.Failure;
     }
 }
-
-

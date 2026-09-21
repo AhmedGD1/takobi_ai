@@ -10,11 +10,14 @@ public partial class BehaviorTree : Node
 {
     public enum TickMode { Idle, Physics }
 
-    [Signal] public delegate void TreeActiveChangedEventHandler(bool active);
+    [Signal] 
+    public delegate void TreeActiveChangedEventHandler(bool active);
 
-    [Export] public Node Agent { get; private set; }
+    [Export] 
+    public Node Agent { get; private set; }
 
-    [Export] public TickMode Mode
+    [Export] 
+    public TickMode Mode
     {
         get => mode;
         set
@@ -25,7 +28,8 @@ public partial class BehaviorTree : Node
         }
     }
 
-    [Export] public bool Active
+    [Export]
+    public bool Active
     {
         get => active;
         set
@@ -45,6 +49,7 @@ public partial class BehaviorTree : Node
     }
 
     [ExportGroup("Settings")]
+    
     [Export(PropertyHint.Range, "1, 165")]
     public int TicksPerSecond { get; private set; } = 60;
 
@@ -101,7 +106,7 @@ public partial class BehaviorTree : Node
     {
         if (Engine.IsEditorHint()) return;
 
-        if (Blackboard is null)
+        if (Blackboard is null && !IsSubTree)
         {
             GD.PushWarning($"[BT] {Name}: Blackboard isn't assigned - new backup created.");
             Blackboard = new();
@@ -206,14 +211,11 @@ public partial class BehaviorTree : Node
 
     #region Utilities
 
-    public void Abort()
-    {
-        root?.Abort(Context);
-    }
+    public void Abort() => root?.Abort(Context);
 
     public void Abort(BTContext ctx) => root?.Abort(ctx);
 
-    internal void SetSubTree(bool value, BTContext ctx, SubTree owner = null)
+    public void SetSubTree(bool value, BTContext ctx, SubTree owner = null)
     {
         IsSubTree = value;
         SubTreeOwner = owner;
@@ -225,4 +227,3 @@ public partial class BehaviorTree : Node
 
     #endregion
 }
-

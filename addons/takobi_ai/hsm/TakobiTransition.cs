@@ -4,7 +4,7 @@ using FSMEventName = Godot.StringName;
 
 namespace TakobiAI.HSM;
 
-public sealed class TakobiTransition<T>(T from, T to, bool isGlobal = false) where T : Enum
+public partial class TakobiTransition<T>(T from, T to, bool isGlobal = false) where T : Enum
 {
     /// <summary>The state this transition originates from.</summary>
     public T From { get; private set; } = from;

@@ -11,7 +11,9 @@ public abstract partial class BTDecorator : BTNode
 
     public override void _Ready()
     {
-        if (Engine.IsEditorHint()) return;
+        if (Engine.IsEditorHint())
+            return;
+            
         Child = GetChildren().OfType<BTNode>().FirstOrDefault();
     }
 
@@ -35,4 +37,3 @@ public abstract partial class BTDecorator : BTNode
 
     protected override void OnAbort(BTContext ctx) => Child?.Abort(ctx);
 }
-

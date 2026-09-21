@@ -67,6 +67,7 @@ public partial class SubTree : BTAction
         childContext.Agent = ctx.Agent;
         childContext.Blackboard = ShareBlackboard ? ctx.Blackboard : tree.Blackboard;
         childContext.SubTreeDepth = ctx.SubTreeDepth + 1;
+        childContext.Rng = ctx.Rng;
 
         return tree.Tick(childContext);
     }

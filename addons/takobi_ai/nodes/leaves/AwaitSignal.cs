@@ -4,8 +4,9 @@ namespace TakobiAI.Leaves;
 
 [Tool, GlobalClass, Icon("uid://peochc6cenjp")]
 public partial class AwaitSignal : BTAction
-{   
-    [Export] public Node Emitter
+{
+    [Export] 
+    public Node Emitter
     {
         get => emitter;
         private set
@@ -18,7 +19,8 @@ public partial class AwaitSignal : BTAction
         }
     }
 
-    [Export] public StringName Signal
+    [Export] 
+    public StringName Signal
     {
         get => signal;
         private set
@@ -71,4 +73,3 @@ public partial class AwaitSignal : BTAction
     private void OnSignal(Variant a, Variant b, Variant c, Variant d, Variant e, Variant f, Variant g) => finished = true;
     private void OnSignal(Variant a, Variant b, Variant c, Variant d, Variant e, Variant f, Variant g, Variant h) => finished = true;
 }
-

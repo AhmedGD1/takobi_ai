@@ -7,10 +7,27 @@ namespace TakobiAI.Leaves;
 public partial class CallMethod : BTAction
 {
     #region Properties
+
+    [Export]
+    public Node Source
+    {
+        get => source;
+        private set => SetSource(value);
+    }
     
-    [Export] public Node Source { get => source; private set => SetSource(value); }
-    [Export] public StringName Method { get => method; private set => SetMethodName(value); }
-    [Export] public Array Args { get => args; private set => SetArgs(value); }
+    [Export]
+    public StringName Method 
+    { 
+        get => method; 
+        private set => SetMethodName(value); 
+    }
+
+    [Export]
+    public Array Args
+    {
+        get => args;
+        private set => SetArgs(value);
+    }
 
     [ExportGroup("Return Value")]
     [Export] public StringName StoreResultKey { get; set; } = string.Empty;
@@ -54,8 +71,11 @@ public partial class CallMethod : BTAction
 
         if (FailOnFalseReturn)
         {
-            if (result.VariantType == Variant.Type.Nil) return Status.Failure;
-            if (result.VariantType == Variant.Type.Bool && !result.AsBool()) return Status.Failure;
+            if (result.VariantType == Variant.Type.Nil)
+                return Status.Failure;
+                
+            if (result.VariantType == Variant.Type.Bool && !result.AsBool()) 
+                return Status.Failure;
         }
 
         return Status.Success;
@@ -108,4 +128,3 @@ public partial class CallMethod : BTAction
 
     #endregion
 }
-

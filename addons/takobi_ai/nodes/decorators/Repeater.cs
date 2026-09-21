@@ -5,8 +5,11 @@ namespace TakobiAI.Decorators;
 [Tool, GlobalClass, Icon("uid://xepntu78s35c")]
 public partial class Repeater : BTDecorator
 {
-    [Export(PropertyHint.Range, "0, 100, suffix:N")] public int Times { get; set; }
-    [Export] public bool FailOnChildFailure { get; set; }
+    [Export(PropertyHint.Range, "2,100,1")]
+    public int Times { get; set; } = 2;
+
+    [Export] 
+    public bool FailOnChildFailure { get; set; }
 
     private int count;
 
@@ -14,18 +17,22 @@ public partial class Repeater : BTDecorator
 
     protected override Status OnTick(BTContext ctx)
     {
-        if (Child is null) return Status.Failure;
+        if (Child is null) 
+            return Status.Failure;
 
         Status status = Child.Tick(ctx);
 
-        if (status == Status.Running) return Status.Running;
+        if (status == Status.Running)
+            return Status.Running;
+            
         if (status == Status.Failure && FailOnChildFailure) 
             return Status.Failure;
 
         count++;
 
-        if (Times > 0 && count >= Times)
+        if (count >= Times)
             return Status.Success;
+            
         return Status.Running;
     }
 }

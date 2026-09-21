@@ -3,7 +3,7 @@ using System;
 
 namespace TakobiAI.HSM;
 
-public sealed class TakobiState<T>(T id) where T : Enum
+public partial class TakobiState<T>(T id) where T : Enum
 {
     /// <summary>The unique identifier for this state, based on the enum value.</summary>
     public T Id { get; private set; } = id;

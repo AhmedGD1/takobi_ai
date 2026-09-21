@@ -12,4 +12,3 @@ public partial class BlackboardErase : BTAction
         return ctx.Blackboard.Erase(Key) ? Status.Success : Status.Failure;
     }
 }
-

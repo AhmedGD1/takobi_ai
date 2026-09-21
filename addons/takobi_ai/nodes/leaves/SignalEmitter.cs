@@ -9,9 +9,26 @@ public partial class SignalEmitter : BTAction
 {
     #region Properties 
 
-    [Export] public Node Emitter { get => emitter; private set => SetEmitter(value); }
-    [Export] public StringName Signal { get => signal; private set => SetSignalName(value); }
-    [Export] public Array Args { get => args; private set => SetArgs(value); }
+    [Export] 
+    public Node Emitter 
+    { 
+        get => emitter; 
+        private set => SetEmitter(value); 
+    }
+
+    [Export]
+    public StringName Signal 
+    { 
+        get => signal; 
+        private set => SetSignalName(value); 
+    }
+
+    [Export]
+    public Array Args
+    {
+        get => args; 
+        private set => SetArgs(value);
+    }
 
     #endregion
 
@@ -95,4 +112,3 @@ public partial class SignalEmitter : BTAction
 
     #endregion
 }
-

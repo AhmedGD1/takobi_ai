@@ -10,7 +10,8 @@ public abstract partial class BTComposite : BTNode
 
     public override void _Ready()
     {
-        if (Engine.IsEditorHint()) return;
+        if (Engine.IsEditorHint()) 
+            return;
 
         Children = [.. GetChildren().OfType<BTNode>()];
     }
@@ -34,4 +35,3 @@ public abstract partial class BTComposite : BTNode
             child.Abort(ctx);
     }
 }
-

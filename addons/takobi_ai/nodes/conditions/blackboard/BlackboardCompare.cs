@@ -15,13 +15,15 @@ public partial class BlackboardCompare : BlackboardCondition
         GreaterOrEqual
     }
 
-    [Export] public CompareMode Mode 
+    [Export] 
+    public CompareMode Mode 
     { 
         get => _mode; 
         set => _mode = value;
     }
 
-    [Export] public Variant Value
+    [Export] 
+    public Variant Value
     {
         get => _value;
         set
@@ -53,16 +55,16 @@ public partial class BlackboardCompare : BlackboardCondition
 
     private bool Compare(Variant existing, Variant value) => existing.VariantType switch
     {
-        Variant.Type.Bool       => CompareBool(existing.AsBool(), value.AsBool()),
-        Variant.Type.Int        => CompareOrdered(existing.AsInt32().CompareTo(value.AsInt32())),
-        Variant.Type.Float      => CompareOrdered(existing.AsDouble().CompareTo(value.AsDouble())),
-        Variant.Type.String     => CompareEquatable(existing.AsString() == value.AsString()),
+        Variant.Type.Bool => CompareBool(existing.AsBool(), value.AsBool()),
+        Variant.Type.Int => CompareOrdered(existing.AsInt32().CompareTo(value.AsInt32())),
+        Variant.Type.Float => CompareOrdered(existing.AsDouble().CompareTo(value.AsDouble())),
+        Variant.Type.String => CompareEquatable(existing.AsString() == value.AsString()),
         Variant.Type.StringName => CompareEquatable(existing.AsStringName() == value.AsStringName()),
-        Variant.Type.NodePath   => CompareEquatable(existing.AsNodePath() == value.AsNodePath()),
-        Variant.Type.Vector2    => CompareEquatable(existing.AsVector2() == value.AsVector2()),
-        Variant.Type.Vector3    => CompareEquatable(existing.AsVector3() == value.AsVector3()),
-        Variant.Type.Vector2I   => CompareEquatable(existing.AsVector2I() == value.AsVector2I()),
-        Variant.Type.Vector3I   => CompareEquatable(existing.AsVector3I() == value.AsVector3I()),
+        Variant.Type.NodePath => CompareEquatable(existing.AsNodePath() == value.AsNodePath()),
+        Variant.Type.Vector2 => CompareEquatable(existing.AsVector2() == value.AsVector2()),
+        Variant.Type.Vector3 => CompareEquatable(existing.AsVector3() == value.AsVector3()),
+        Variant.Type.Vector2I => CompareEquatable(existing.AsVector2I() == value.AsVector2I()),
+        Variant.Type.Vector3I => CompareEquatable(existing.AsVector3I() == value.AsVector3I()),
         _ => Unsupported(existing.VariantType)
     };
 
@@ -73,6 +75,7 @@ public partial class BlackboardCompare : BlackboardCondition
             GD.PushWarning($"[BT] {Name}: Bool only supports Equal / NotEqual.");
             return false;
         }
+        
         return Mode == CompareMode.Equal ? a == b : a != b;
     }
 
@@ -85,11 +88,11 @@ public partial class BlackboardCompare : BlackboardCondition
 
     private bool CompareOrdered(int cmp) => Mode switch
     {
-        CompareMode.Equal          => cmp == 0,
-        CompareMode.NotEqual       => cmp != 0,
-        CompareMode.Less           => cmp < 0,
-        CompareMode.Greater        => cmp > 0,
-        CompareMode.LessOrEqual    => cmp <= 0,
+        CompareMode.Equal => cmp == 0,
+        CompareMode.NotEqual => cmp != 0,
+        CompareMode.Less => cmp < 0,
+        CompareMode.Greater => cmp > 0,
+        CompareMode.LessOrEqual => cmp <= 0,
         CompareMode.GreaterOrEqual => cmp >= 0,
         _ => false
     };
@@ -100,4 +103,3 @@ public partial class BlackboardCompare : BlackboardCondition
         return false;
     }
 }
-

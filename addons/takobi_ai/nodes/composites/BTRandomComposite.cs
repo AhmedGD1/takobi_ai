@@ -11,22 +11,23 @@ public abstract partial class BTRandomComposite : BTComposite
     {
         base._Ready(); // important
 
-        if (Engine.IsEditorHint()) return;
+        if (Engine.IsEditorHint())
+            return;
+
         ShuffledChildren = [.. Children];
     }
 
     protected override void OnEnter(BTContext ctx)
     {
-        Shuffle(ShuffledChildren);
+        Shuffle(ShuffledChildren, ctx.Rng);
     }
 
-    private static void Shuffle(BTNode[] array)
+    private static void Shuffle(BTNode[] array, RandomNumberGenerator rng)
     {
         for (int i = array.Length - 1; i > 0; i--)
         {
-            int j = GD.RandRange(0, i);
+            int j = rng.RandiRange(0, i);
             (array[j], array[i]) = (array[i], array[j]);
         }
     }
 }
-

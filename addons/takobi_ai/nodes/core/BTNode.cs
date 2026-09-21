@@ -42,12 +42,12 @@ public abstract partial class BTNode : Node
 
     public void Abort(BTContext ctx)
     {
-        if (!IsRunning) return;
+        if (!IsRunning)
+            return;
+
         IsRunning = false;
+        
         OnAbort(ctx);
         OnExit(ctx, Status.Failure);
     }
 }
-
-
-

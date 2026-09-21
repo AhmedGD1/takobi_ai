@@ -30,4 +30,3 @@ public partial class Log : BTAction
         GD.PrintRich(result);
     }
 }
-

@@ -5,7 +5,7 @@ namespace TakobiAI.Decorators;
 [Tool, GlobalClass, Icon("uid://021i6gvxlo8q")]
 public partial class Retry : BTDecorator
 {
-    [Export(PropertyHint.Range, "0, 10000")]
+    [Export(PropertyHint.Range, "0,10000,1")]
     public int MaxAttempts { get; set; } = 3;
 
     private int attempts;
@@ -30,4 +30,3 @@ public partial class Retry : BTDecorator
         return status;
     }
 }
-

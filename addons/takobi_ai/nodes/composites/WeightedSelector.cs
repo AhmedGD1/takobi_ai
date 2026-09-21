@@ -8,8 +8,6 @@ namespace TakobiAI.Composites;
 [Tool, GlobalClass, Icon("uid://cvlicgbm21ebg")]
 public partial class WeightedSelector : BTComposite
 {
-    private RandomNumberGenerator rng = new();
-
     private int runningIndex = -1;
 
     protected override void OnEnter(BTContext ctx) => runningIndex = -1;
@@ -19,12 +17,15 @@ public partial class WeightedSelector : BTComposite
         if (runningIndex != -1)
         {
             Status s = Children[runningIndex].Tick(ctx);
+
             if (s != Status.Running)
                 runningIndex = -1;
+                
             return s;
         }
 
         int index = PickWeightedIndex(ctx);
+        
         if (index == -1)
             return Status.Failure;
 
@@ -48,7 +49,7 @@ public partial class WeightedSelector : BTComposite
         if (total <= 0f)
             return -1;
 
-        float roll = rng.Randf() * total;
+        float roll = ctx.Rng.Randf() * total;
         float acc = 0f;
 
         for (int i = 0; i < weights.Length; i++)

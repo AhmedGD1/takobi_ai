@@ -5,8 +5,11 @@ namespace TakobiAI.Leaves;
 [Tool, GlobalClass, Icon("uid://2s56sap7w5jv")]
 public partial class IncrementValue : BTAction
 {
-    [Export] public StringName Key { get; set; } = string.Empty;
-    [Export] public Variant Amount
+    [Export] 
+    public StringName Key { get; set; } = string.Empty;
+    
+    [Export] 
+    public Variant Amount
     {
         get => _amount;
         set
@@ -51,4 +54,3 @@ public partial class IncrementValue : BTAction
         return Status.Failure;
     }
 }
-

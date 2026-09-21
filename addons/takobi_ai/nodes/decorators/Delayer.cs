@@ -19,13 +19,19 @@ public partial class Delayer : BTDecorator
         }
     }
 
-    [Export(PropertyHint.Range, "0.05, 10, suffix:s")] public float Duration { get; set; } = 1f;
-    [Export(PropertyHint.Range, "0.01, 10, suffix:s")] public float MinDuration { get; set; } = 1f;
-    [Export(PropertyHint.PlaceholderText, "key name")] public StringName BlackboardKey { get; set; } = "";
+    [Export(PropertyHint.Range, "0.05,10,suffix:s")] 
+    public float Duration { get; set; } = 1f;
 
-    private ulong startTime;
+    [Export(PropertyHint.Range, "0.01,10,suffix:s")]
+    public float MinDuration { get; set; } = 0.5f;
+
+    [Export(PropertyHint.PlaceholderText, "key name")] 
+    public StringName BlackboardKey { get; set; } = "";
+
+    private TimedGate gate = new();
+    
     private double finalDuration;
-    private bool elapsed;
+    private bool hasElapsed;
 
     #region Backend Fields
 
@@ -35,12 +41,12 @@ public partial class Delayer : BTDecorator
 
     protected override void OnEnter(BTContext ctx)
     {
-        startTime = Time.GetTicksMsec();
-        elapsed = false;
+        gate.Start();
+        hasElapsed = false;
 
         finalDuration = Source switch
         {
-            DelaySource.Random => GD.RandRange(MinDuration, Duration),
+            DelaySource.Random => ctx.Rng.RandfRange(MinDuration, Duration),
             DelaySource.Constant => Duration,
             DelaySource.Blackboard => ctx.Blackboard.GetValue<double>(BlackboardKey, -1),
             _ => 0
@@ -49,12 +55,11 @@ public partial class Delayer : BTDecorator
 
     protected override Status OnTick(BTContext ctx)
     {
-        if (!elapsed)
+        if (!hasElapsed)
         {
-            double passed = (Time.GetTicksMsec() - startTime) / 1000.0;
-            if (passed < finalDuration)
+            if (!gate.HasElapsed(finalDuration))
                 return Status.Running;
-            elapsed = true;
+            hasElapsed = true;
         }
 
         return Child?.Tick(ctx) ?? Status.Success;

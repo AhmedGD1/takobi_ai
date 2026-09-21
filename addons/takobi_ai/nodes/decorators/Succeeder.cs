@@ -7,10 +7,13 @@ public partial class Succeeder : BTDecorator
 {
     protected override Status OnTick(BTContext ctx)
     {
-        if (Child is null) return Status.Failure;
+        if (Child is null) 
+            return Status.Failure;
 
         Status status = Child.Tick(ctx);
-        if (status == Status.Running) return Status.Running;
+        
+        if (status == Status.Running) 
+            return Status.Running;
 
         return Status.Success;
     }

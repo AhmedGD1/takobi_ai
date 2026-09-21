@@ -32,17 +32,16 @@ public partial class Weight : BTDecorator
 
     public override float GetWeight(BTContext ctx)
     {
-        return Source == WeightSource.Constant
-            ? Amount
-            : ctx.Blackboard.GetValue<float>(BlackboardKey);
+        return Source != WeightSource.Constant
+            ? ctx.Blackboard.GetValue<float>(BlackboardKey)
+            : Amount;
     }
 
-    protected override Status OnTick(BTContext ctx) =>
-        Child?.Tick(ctx) ?? Status.Failure;
+    protected override Status OnTick(BTContext ctx) => Child?.Tick(ctx) ?? Status.Failure;
 
     public override void _ValidateProperty(Dictionary property)
     {
-        string name = property["name"].AsString();
+        string name = property["name"].AsStringName();
 
         if (name == nameof(BlackboardKey) && Source == WeightSource.Constant)
             property["usage"] = (int)PropertyUsageFlags.None;
@@ -51,4 +50,3 @@ public partial class Weight : BTDecorator
             property["usage"] = (int)PropertyUsageFlags.None;
     }
 }
-
