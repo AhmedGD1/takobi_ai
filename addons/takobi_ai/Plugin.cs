@@ -32,7 +32,7 @@ public partial class Plugin : EditorPlugin
         AddInspectorPlugin(blackboardCompareInspectorPlugin);
         AddDebuggerPlugin(debuggerPlugin);
 
-        AddAutoloadSingleton(MetricsAutoloadName, MetricsAutoloadPath);
+        
     }
 
     public override void _ExitTree()
@@ -44,6 +44,15 @@ public partial class Plugin : EditorPlugin
         RemoveInspectorPlugin(blackboardCompareInspectorPlugin);
         RemoveDebuggerPlugin(debuggerPlugin);
 
+    }
+
+    public override void _EnablePlugin()
+    {
+        AddAutoloadSingleton(MetricsAutoloadName, MetricsAutoloadPath);
+    }
+
+    public override void _DisablePlugin()
+    {
         RemoveAutoloadSingleton(MetricsAutoloadName);
     }
 }

@@ -1,209 +1,228 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using Godot;
 
 namespace TakobiAI.HSM;
 
-public partial class TakobiState<T>(T id) where T : Enum
+/// <summary>
+/// A single state of a <see cref="TakobiHSM{T}"/>, with enter, update and exit callbacks,
+/// a minimum duration and a re-entry cooldown. Created through <see cref="TakobiHSM{T}.AddState"/>.
+/// </summary>
+/// <remarks>
+/// Callbacks are multicast: every <see cref="OnEnter"/>, <see cref="OnUpdate"/> and <see cref="OnExit"/> call
+/// adds a subscriber, and subscribers run in the order they were added.
+/// </remarks>
+/// <example>
+/// <code>
+/// sm.AddState(PlayerState.Dash)
+///   .OnEnter(StartDash)
+///   .OnUpdate(dt => MoveDash(dt))
+///   .OnExit(EndDash)
+///   .SetMinDuration(0.2)
+///   .SetCooldown(1.5);
+/// </code>
+/// </example>
+/// <typeparam name="T">The enum type that identifies states.</typeparam>
+/// <param name="id">The id of this state.</param>
+public sealed class TakobiState<T>(T id) where T : Enum
 {
-    /// <summary>The unique identifier for this state, based on the enum value.</summary>
-    public T Id { get; private set; } = id;
+    /// <summary>The id of this state.</summary>
+    public T Id { get; } = id;
 
-    /// <summary>The state to transition to when this state's <see cref="Timeout"/> elapses.</summary>
-    public T TimeoutTargetState { get; private set; }
-
-    /// <summary>Invoked when this state is exited. Subscribe via <see cref="OnExit"/>.</summary>
-    public Action Exit { get; private set; }
+    /// <summary>Invoked every update while this state is active. Subscribe via <see cref="OnUpdate"/>.</summary>
+    public Action<double> UpdateCallback { get; private set; }
 
     /// <summary>Invoked when this state is entered. Subscribe via <see cref="OnEnter"/>.</summary>
-    public Action Enter { get; private set; }
+    public Action EnterCallback { get; private set; }
 
-    /// <summary>Invoked every tick while this state is active. Subscribe via <see cref="OnUpdate"/>.</summary>
-    public Action<float> Update { get; private set; }
+    /// <summary>Invoked when this state is exited. Subscribe via <see cref="OnExit"/>.</summary>
+    public Action ExitCallback { get; private set; }
 
     /// <summary>
-    /// Invoked when this state times out, before transitioning to <see cref="TimeoutTargetState"/>.
-    /// Subscribe via <see cref="OnTimeout"/>.
+    /// Minimum time in seconds this state must be active before the machine can leave it.
+    /// Set via <see cref="SetMinDuration"/>.
     /// </summary>
-    public Action OnTimeoutCallback { get; private set; }
-
-    /// <summary>Minimum time (in seconds) that must elapse before any transition away from this state is allowed.</summary>
     public double MinDuration { get; private set; }
 
     /// <summary>
-    /// Duration (in seconds) after which the state automatically transitions to <see cref="TimeoutTargetState"/>.
-    /// <see langword="null"/> means no timeout is set.
-    /// </summary>
-    public double? Timeout { get; private set; }
-
-    /// <summary>
-    /// Minimum time (in seconds) that must pass after this state was last entered
-    /// before it can be entered again.
+    /// Time in seconds after leaving this state before it can be entered again by a transition
+    /// or <see cref="TakobiHSM{T}.TryChangeState"/>. Set via <see cref="SetCooldown"/>.
     /// </summary>
     public double Cooldown { get; private set; }
 
-    /// <summary>The total machine time at which this state was last entered. Used for cooldown evaluation.</summary>
-    public double LastFiredTime { get; internal set; } = double.NegativeInfinity;
+    /// <summary>
+    /// The machine's <see cref="TakobiHSM{T}.TotalElapsed"/> at the moment this state was last exited.
+    /// Negative infinity if it has never been left. Used for cooldown evaluation.
+    /// </summary>
+    public double CapturedElapsed { get; internal set; } = double.NegativeInfinity;
+
+    private List<ISubMachine> subMachines;
 
     /// <summary>
-    /// The list of transitions originating from this state, sorted by priority then insertion order.
-    /// Managed internally — use <see cref="TakobiHSM{T}.AddTransition"/> to add transitions.
+    /// Adds a callback invoked every update while this state is active, after the machine
+    /// advances its timers and before transitions are evaluated.
     /// </summary>
-    public List<TakobiTransition<T>> Transitions { get; private set; } = [];
-
-
-    /// <summary>
-    /// Registers a callback to be invoked every tick while this state is active.
-    /// Multiple callbacks can be registered and will all be called in subscription order.
-    /// </summary>
-    /// <param name="callback">The delegate receiving the delta time (in seconds) each tick.</param>
-    /// <returns>This <see cref="TakobiState{T}"/> instance for fluent chaining.</returns>
-    public TakobiState<T> OnUpdate(Action<float> callback)
+    /// <param name="action">The callback, receiving the delta time in seconds.</param>
+    /// <returns>This state, for chaining.</returns>
+    public TakobiState<T> OnUpdate(Action<double> action)
     {
-        Update += callback;
+        UpdateCallback += action;
+        return this;
+    }
+
+    /// <summary>Adds a callback invoked when this state is entered.</summary>
+    /// <remarks>Changing this machine's state from inside this callback is rejected with an error.</remarks>
+    /// <param name="action">The callback to invoke.</param>
+    /// <returns>This state, for chaining.</returns>
+    public TakobiState<T> OnEnter(Action action)
+    {
+        EnterCallback += action;
+        return this;
+    }
+
+    /// <summary>Adds a callback invoked when this state is exited.</summary>
+    /// <remarks>Changing this machine's state from inside this callback is rejected with an error.</remarks>
+    /// <param name="action">The callback to invoke.</param>
+    /// <returns>This state, for chaining.</returns>
+    public TakobiState<T> OnExit(Action action)
+    {
+        ExitCallback += action;
         return this;
     }
 
     /// <summary>
-    /// Registers a callback to be invoked when this state is entered.
-    /// Multiple callbacks can be registered and will all be called in subscription order.
-    /// </summary>
-    /// <param name="callback">The delegate to invoke on entry.</param>
-    /// <returns>This <see cref="TakobiState{T}"/> instance for fluent chaining.</returns>
-    public TakobiState<T> OnEnter(Action callback)
-    {
-        Enter += callback;
-        return this;
-    }
-
-    /// <summary>
-    /// Registers a callback to be invoked when this state is exited.
-    /// Multiple callbacks can be registered and will all be called in subscription order.
-    /// </summary>
-    /// <param name="callback">The delegate to invoke on exit.</param>
-    /// <returns>This <see cref="TakobiState{T}"/> instance for fluent chaining.</returns>
-    public TakobiState<T> OnExit(Action callback)
-    {
-        Exit += callback;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the minimum time (in seconds) that must pass after this state was last entered
-    /// before it can be entered again. Useful for preventing rapid re-entry into the same state.
-    /// </summary>
-    /// <param name="duration">Cooldown duration in seconds. Must be greater than zero.</param>
-    /// <returns>This <see cref="TakobiState{T}"/> instance for fluent chaining.</returns>
-    public TakobiState<T> SetCooldown(double duration)
-    {        
-        Cooldown = ValidateDuration(duration);
-        return this;
-    }
-
-    /// <summary>
-    /// Returns <see langword="true"/> if this state is currently on cooldown and cannot be entered yet.
-    /// </summary>
-    /// <param name="totalTime">The current total elapsed time of the state machine.</param>
-    public bool IsOnCooldown(double totalTime)
-    {
-        return totalTime < (LastFiredTime + Cooldown);
-    }
-
-    /// <summary>
-    /// Registers a callback invoked specifically when this state times out,
-    /// just before transitioning to <see cref="TimeoutTargetState"/>.<br/>
-    /// Prefer this over <see cref="OnExit"/> when you need to distinguish
-    /// a timeout exit from a regular transition exit.
-    /// </summary>
-    /// <param name="callback">The delegate to invoke on timeout.</param>
-    /// <returns>This <see cref="TakobiState{T}"/> instance for fluent chaining.</returns>
-    public TakobiState<T> OnTimeout(Action callback)
-    {
-        OnTimeoutCallback = callback;
-        return this;
-    }
-
-    /// <summary>
-    /// Configures this state to automatically transition to <paramref name="to"/>
-    /// after <paramref name="duration"/> seconds have elapsed since entry.
-    /// </summary>
-    /// <param name="duration">How long (in seconds) to stay in this state before timing out. Clamped to zero minimum.</param>
-    /// <param name="to">The state to transition to when the timeout elapses.</param>
-    /// <returns>This <see cref="TakobiState{T}"/> instance for fluent chaining.</returns>
-    public TakobiState<T> TimeoutAfter(double duration, T to)
-    {
-        Timeout = ValidateDuration(duration);
-        TimeoutTargetState = to;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the minimum time (in seconds) this state must be active before
-    /// any transition away from it is considered, regardless of conditions or events.<br/>
-    /// Useful for ensuring animations or effects have time to play out.
-    /// </summary>
-    /// <param name="duration">Minimum active duration in seconds. Must be greater than zero.</param>
-    /// <returns>This <see cref="TakobiState{T}"/> instance for fluent chaining.</returns>
-    public TakobiState<T> SetMinDuration(double duration)
-    {
-        MinDuration = ValidateDuration(duration);
-        return this;
-    }
-
-    /// <summary>
-    /// Attaches <paramref name="machine"/> to this state, forwarding lifecycle events automatically.<br/>
-    /// • <b>Enter</b> — resets (if <paramref name="resetOnEnter"/>) then starts the sub-machine.<br/>
-    /// • <b>Update</b> — ticks the sub-machine with the current delta time.<br/>
-    /// • <b>Exit</b> — pauses the sub-machine.
+    /// Sets how long after leaving this state it cannot be entered again.
+    /// A state that has never been left is always enterable.
     /// </summary>
     /// <remarks>
-    /// Set <paramref name="resetOnEnter"/> to <see langword="false"/> to resume the sub-machine
-    /// from where it was paused on re-entry, instead of restarting from the initial state.
-    /// <br/><br/>
-    /// <b>Usage:</b><br/>
-    /// <c>AddState(PlayerState.Combat).WithSubMachine(combatSM).SetMinDuration(0.2f);</c><br/>
-    /// <c>AddState(PlayerState.Patrol).WithSubMachine(patrolSM, resetOnEnter: false);</c>
+    /// The cooldown is measured from the moment the state is <b>exited</b>, not entered.
+    /// It applies to transitions and <see cref="TakobiHSM{T}.TryChangeState"/>.
+    /// <see cref="TakobiHSM{T}.ChangeState"/> and <see cref="TakobiHSM{T}.Restart"/> ignore it.
+    /// Pass <see cref="double.PositiveInfinity"/> for a state that transitions can enter only once (until the machine is disabled).
     /// </remarks>
-    /// <typeparam name="TChild">Enum type representing the sub-machine's states.</typeparam>
-    /// <param name="machine">The sub-machine to attach. Must be fully configured before calling this.</param>
-    /// <param name="resetOnEnter">
-    /// <see langword="true"/> (default) restarts the sub-machine on every entry.
-    /// <see langword="false"/> resumes from the last paused state.
-    /// </param>
-    /// <returns>This <see cref="TakobiState{T}"/> instance for fluent chaining.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="machine"/> is <see langword="null"/>.</exception>
-    public TakobiState<T> WithSubMachine<TChild>(TakobiHSM<TChild> machine, bool resetOnEnter = true) where TChild : Enum
+    /// <param name="duration">Cooldown in seconds. Negative values are clamped to zero.</param>
+    /// <returns>This state, for chaining.</returns>
+    public TakobiState<T> SetCooldown(double duration)
     {
-        Enter += () =>
-        {
-            if (resetOnEnter) machine.Reset();
-            else if (!machine.HasStarted) machine.Start();
-            else machine.Resume();
-        };
-        
-        Update += dt => machine.Tick(dt);
-        Exit += machine.Pause;
+        Cooldown = Mathf.Max(0.0, duration);
         return this;
     }
 
     /// <summary>
-    /// Internal method for adding a transition originating from this state.
-    /// The transition is inserted in sorted order by priority then insertion index.<br/>
-    /// Do not call directly — use <see cref="TakobiHSM{T}.AddTransition"/> instead.
+    /// Sets how long this state must be active before the machine can leave it.
+    /// Until then, transitions and <see cref="TakobiHSM{T}.TryChangeState"/> are refused.
     /// </summary>
-    /// <param name="to">The target state id.</param>
-    /// <param name="insertionCounter">The global insertion counter from the state machine, used for stable ordering.</param>
-    /// <returns>The newly created <see cref="TakobiTransition{T}"/>.</returns>
-    internal TakobiTransition<T> AddTransition(T to, int insertionCounter)
+    /// <remarks>
+    /// Useful for letting an animation or effect play out. Individual transitions can bypass it with
+    /// <see cref="TakobiTransition{T}.OverrideMinDuration"/>.
+    /// </remarks>
+    /// <param name="duration">Minimum duration in seconds. Negative values are clamped to zero.</param>
+    /// <returns>This state, for chaining.</returns>
+    public TakobiState<T> SetMinDuration(double duration)
     {
-        var transition = new TakobiTransition<T>(Id, to) { InsertionIndex = insertionCounter };
-        Transitions.Add(transition);
-        return transition;
+        MinDuration = Mathf.Max(0.0, duration);
+        return this;
     }
 
-    private double ValidateDuration(double duration)
+    /// <summary>
+    /// Attaches <paramref name="machine"/> as a sub-machine that runs while this state is active.
+    /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    /// <item><description><b>Enter:</b> after this state's own Enter callbacks, restarts the sub-machine
+    /// (if <paramref name="restartOnEnter"/>) and unpauses it.</description></item>
+    /// <item><description><b>Update:</b> after this state's own update callbacks, updates the sub-machine with the same delta time.</description></item>
+    /// <item><description><b>Events:</b> an event triggered on the parent is offered to the sub-machine first.
+    /// If the sub-machine fires a transition for it, the event is consumed; otherwise the parent handles it.</description></item>
+    /// <item><description><b>Exit:</b> before this state's own Exit callbacks, with <paramref name="restartOnEnter"/>
+    /// disables the sub-machine, which runs its current state's Exit and clears its timers and cooldowns.
+    /// Otherwise pauses it, keeping its current state and without running any Exit.</description></item>
+    /// </list>
+    /// <para>
+    /// The order is the same however the state is configured, so it does not matter whether
+    /// <c>WithSubMachine</c> is called before or after <see cref="OnEnter"/>, <see cref="OnUpdate"/> and <see cref="OnExit"/>.
+    /// </para>
+    /// <para>
+    /// The sub-machine must be fully configured and have <see cref="TakobiHSM{T}.SetInitialState"/> called
+    /// before this state is first entered. With <paramref name="restartOnEnter"/> set to <see langword="false"/>
+    /// the sub-machine resumes where it was paused instead of returning to its initial state.
+    /// </para>
+    /// <para>
+    /// <see cref="TakobiHSM{T}.SetInitialState"/> enters the initial state immediately, so a sub-machine's
+    /// initial Enter callback runs once at setup and again on the parent's first entry when restarting.
+    /// </para>
+    /// <c>AddState(PlayerState.Combat).WithSubMachine(combatSM).SetMinDuration(0.2);</c><br/>
+    /// <c>AddState(PlayerState.Patrol).WithSubMachine(patrolSM, restartOnEnter: false);</c>
+    /// </remarks>
+    /// <typeparam name="TChild">The enum type of the sub-machine's states.</typeparam>
+    /// <param name="machine">The sub-machine to attach.</param>
+    /// <param name="restartOnEnter">
+    /// <see langword="true"/> (default) restarts the sub-machine on every entry.
+    /// <see langword="false"/> resumes it from where it was paused.
+    /// </param>
+    /// <returns>This state, for chaining.</returns>
+    public TakobiState<T> WithSubMachine<TChild>(TakobiHSM<TChild> machine, bool restartOnEnter = true) where TChild : Enum
     {
-        if (duration < 0.0)
-            HSMLogger.LogWarning($"Invalid duration: {duration}, value should be zero or greater. Clamped to 0.");
-        return Math.Max(0.0, duration);
+        ArgumentNullException.ThrowIfNull(machine);
+
+        (subMachines ??= []).Add(new SubMachineHost<TChild>(machine, restartOnEnter));
+        return this;
+    }
+
+    internal void InvokeEnter()
+    {
+        EnterCallback?.Invoke();
+
+        if (subMachines is null)
+            return;
+
+        for (int i = 0; i < subMachines.Count; i++)
+            subMachines[i].ParentEntered();
+    }
+
+    internal void InvokeExit()
+    {
+        if (subMachines is not null)
+        {
+            for (int i = 0; i < subMachines.Count; i++)
+                subMachines[i].ParentExited();
+        }
+
+        ExitCallback?.Invoke();
+    }
+
+    internal void InvokeSubMachineUpdate(double delta)
+    {
+        if (subMachines is null)
+            return;
+
+        for (int i = 0; i < subMachines.Count; i++)
+            subMachines[i].Update(delta);
+    }
+
+    /// <summary>Offers an event to the sub-machines, innermost first. Returns true if one of them fired a transition for it.</summary>
+    internal bool OfferEventToSubMachines(StringName eventName)
+    {
+        if (subMachines is null)
+            return false;
+
+        for (int i = 0; i < subMachines.Count; i++)
+        {
+            if (subMachines[i].TryHandleEvent(eventName))
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>Returns <see langword="true"/> if this state's cooldown has not elapsed and it can't be entered.</summary>
+    /// <param name="totalElapsed">The machine's current <see cref="TakobiHSM{T}.TotalElapsed"/>.</param>
+    public bool IsOnCooldown(double totalElapsed)
+    {
+        if (double.IsNegativeInfinity(CapturedElapsed))
+            return false;
+
+        return totalElapsed < CapturedElapsed + Cooldown;
     }
 }
+
